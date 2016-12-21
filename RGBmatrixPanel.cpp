@@ -324,6 +324,13 @@ uint16_t RGBmatrixPanel::ColorHSV(
          (b <<  1) | ( b        >> 3);
 }
 
+void swap(int16_t *x, int16_t *y) {
+    int16_t t;
+    t=*x;
+    *x = *y;
+    *y = t;
+}
+
 void RGBmatrixPanel::drawPixel(int16_t x, int16_t y, uint16_t c) {
   uint8_t r, g, b, bit, limit, *ptr;
 
@@ -331,7 +338,7 @@ void RGBmatrixPanel::drawPixel(int16_t x, int16_t y, uint16_t c) {
 
   switch(rotation) {
    case 1:
-    swap(x, y);
+    swap(&x, &y);
     x = WIDTH  - 1 - x;
     break;
    case 2:
@@ -339,7 +346,7 @@ void RGBmatrixPanel::drawPixel(int16_t x, int16_t y, uint16_t c) {
     y = HEIGHT - 1 - y;
     break;
    case 3:
-    swap(x, y);
+    swap(&x, &y);
     y = HEIGHT - 1 - y;
     break;
   }
@@ -582,6 +589,8 @@ void RGBmatrixPanel::updateDisplay(void) {
 			DATAPORT = ptr[i];
 			//SCLKPORT = tick; // Clock lo
 			digitalWriteFast(CLK, HIGH);
+                        __asm__("nop\n\t");
+                        __asm__("nop\n\t");
 			//SCLKPORT = tock; // Clock hip
 			digitalWriteFast(CLK, LOW);
 		}

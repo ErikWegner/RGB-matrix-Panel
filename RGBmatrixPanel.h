@@ -12,8 +12,8 @@
 	#define OE	17
 	#define A   23
 	#define B   22
-	#define C   21
-	#define D   20
+	#define C   15
+	#define D   16
 #endif
 
 class RGBmatrixPanel : public Adafruit_GFX {
