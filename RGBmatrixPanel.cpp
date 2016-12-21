@@ -618,6 +618,8 @@ void RGBmatrixPanel::updateDisplay(void) {
 
 			//SCLKPORT = tick; // Clock lo
 			digitalWriteFast(CLK, HIGH);
+                        __asm__("nop\n\t");
+                        __asm__("nop\n\t");
 			//SCLKPORT = tock; // Clock hip
 			digitalWriteFast(CLK, LOW);
 		}

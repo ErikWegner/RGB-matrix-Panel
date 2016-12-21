@@ -7,9 +7,18 @@
 #include "Adafruit_GFX.h"
 
 #ifdef CORE_TEENSY
+/*
+ *     Matrix PIN   Teensy 3.5 PIN
+ *             R1 - 2
+ *             G1 - 3
+ *             B1 - 4
+ *             R2 - 5
+ *             G2 - 6
+ *             B2 - 7
+ */	
 	#define CLK 19
 	#define LAT 18
-	#define OE	17
+	#define OE  17
 	#define A   23
 	#define B   22
 	#define C   15
