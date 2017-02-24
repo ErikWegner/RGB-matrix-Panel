@@ -209,7 +209,7 @@ void RGBmatrixPanel::begin(void) {
   DATADIR = B11111100;
   DATAPORT = 0;
 
-  drawTimer.begin(drawInterrupt, 150);
+  drawTimer.begin(drawInterrupt, 25);
 
 #else
   pinMode(_sclk , OUTPUT); SCLKPORT   &= ~sclkpin;  // Low
@@ -521,7 +521,19 @@ ISR(TIMER1_OVF_vect, ISR_BLOCK) { // ISR_BLOCK important -- see notes later
 // function...hopefully tenses are sufficiently commented.
 
 #ifdef CORE_TEENSY
+volatile int8_t teensy_tick = 1;
+volatile int8_t teensy_tock = 1;
+
 void RGBmatrixPanel::updateDisplay(void) {
+    
+        // teensy_tock: decreased on each interrupt
+        // teensy_tick: bcm duration doubled each time teensy_tock is zero
+
+        teensy_tock--;
+        if (teensy_tock > 0) {
+            return;
+        }
+        
 	uint8_t  i, *ptr;
 
 	digitalWriteFast(OE, HIGH); // Disable LED output during row/plane switchover
@@ -560,6 +572,8 @@ void RGBmatrixPanel::updateDisplay(void) {
 			else           digitalWriteFast(D, LOW);
 		}
 	}
+	
+	teensy_tock = 1 << plane;
 
 	// buffptr, being 'volatile' type, doesn't take well to optimization.
 	// A local register copy can speed some things up:
