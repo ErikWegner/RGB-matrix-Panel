@@ -209,7 +209,7 @@ void RGBmatrixPanel::begin(void) {
   DATADIR = B11111100;
   DATAPORT = 0;
 
-  drawTimer.begin(drawInterrupt, 25);
+  drawTimer.begin(drawInterrupt, 15);
 
 #else
   pinMode(_sclk , OUTPUT); SCLKPORT   &= ~sclkpin;  // Low
@@ -547,6 +547,7 @@ void RGBmatrixPanel::updateDisplay(void) {
 	// vertical scanning artifacts, in practice with this panel it causes
 	// a green 'ghosting' effect on black pixels, a much worse artifact.
 
+        teensy_tock = 1 << plane;
 	if (++plane >= nPlanes) {      // Advance plane counter.  Maxed out?
 		plane = 0;                  // Yes, reset to plane 0, and
 		if (++row >= nRows) {        // advance row counter.  Maxed out?
@@ -573,7 +574,7 @@ void RGBmatrixPanel::updateDisplay(void) {
 		}
 	}
 	
-	teensy_tock = 1 << plane;
+	
 
 	// buffptr, being 'volatile' type, doesn't take well to optimization.
 	// A local register copy can speed some things up:
