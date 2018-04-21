@@ -209,7 +209,7 @@ void RGBmatrixPanel::begin(void) {
   DATADIR = B11111100;
   DATAPORT = 0;
 
-  drawTimer.begin(drawInterrupt, 15);
+  drawTimer.begin(drawInterrupt, 25);
 
 #else
   pinMode(_sclk , OUTPUT); SCLKPORT   &= ~sclkpin;  // Low
@@ -523,16 +523,18 @@ ISR(TIMER1_OVF_vect, ISR_BLOCK) { // ISR_BLOCK important -- see notes later
 #ifdef CORE_TEENSY
 volatile int8_t teensy_tick = 1;
 volatile int8_t teensy_tock = 1;
+volatile uint16_t teensy_time = 0;
 
 void RGBmatrixPanel::updateDisplay(void) {
-    
+  uint16_t t, duration;  
         // teensy_tock: decreased on each interrupt
         // teensy_tick: bcm duration doubled each time teensy_tock is zero
 
-        teensy_tock--;
-        if (teensy_tock > 0) {
-            return;
-        }
+        
+        duration = 60 << plane;
+
+        drawTimer.end();
+        drawTimer.begin(drawInterrupt, duration);
         
 	uint8_t  i, *ptr;
 
@@ -548,6 +550,8 @@ void RGBmatrixPanel::updateDisplay(void) {
 	// a green 'ghosting' effect on black pixels, a much worse artifact.
 
         teensy_tock = 1 << plane;
+        //Serial.print(F(" tock "));
+        //Serial.print(teensy_tock);
 	if (++plane >= nPlanes) {      // Advance plane counter.  Maxed out?
 		plane = 0;                  // Yes, reset to plane 0, and
 		if (++row >= nRows) {        // advance row counter.  Maxed out?
@@ -572,17 +576,19 @@ void RGBmatrixPanel::updateDisplay(void) {
 			if (row & 0x8) digitalWriteFast(D, HIGH);
 			else           digitalWriteFast(D, LOW);
 		}
+                __asm__("nop\n\t");
+                __asm__("nop\n\t");
 	}
 	
-	
+        //Serial.print(F(" plane "));
+        //Serial.print(plane);
+
+	digitalWriteFast(OE, LOW); // Re-enable output
+	digitalWriteFast(LAT, LOW); // Latch down
 
 	// buffptr, being 'volatile' type, doesn't take well to optimization.
 	// A local register copy can speed some things up:
 	ptr = (uint8_t *)buffptr;
-
-	//drawTimer.begin(drawInterrupt, 10000);
-	digitalWriteFast(OE, LOW); // Re-enable output
-	digitalWriteFast(LAT, LOW); // Latch down
 
 	// Record current state of SCLKPORT register, as well as a second
 	// copy with the clock bit set.  This makes the innnermost data-
